@@ -32,4 +32,4 @@ nodes:
   transit_node: 0
   walk_node: 1
   model_node_id: 1004
-file: ./projects/project_A.yml
+file: /Users/wsp/Documents/GitHub/project_card_registry_template/projects/project_A.yml
