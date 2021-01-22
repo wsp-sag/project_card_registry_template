@@ -1,2 +1,5 @@
 
 .DS_Store
+network_wrangler_*.log
+.ipynb_checkpoints/*
+tests/__pycache__/*

@@ -6,9 +6,8 @@ dependencies:
   prerequisites: []
   corequisites: []
   conflicts: []
-changes:
-- category: New Roadway
-  links:
+category: New Roadway
+links:
   - A: 1001
     B: 1002
     distance : 0.1500
@@ -18,7 +17,7 @@ changes:
     drive_access: 1
     transit_access: 0
     walk_access: 1
-  nodes:
+nodes:
   - X: -93.14412
     Y: 44.87497
     bike_node: 1
