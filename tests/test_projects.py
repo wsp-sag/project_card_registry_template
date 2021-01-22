@@ -1,6 +1,5 @@
 import os
 import yaml
-from geopandas import GeoDataFrame
 import pytest
 from network_wrangler import ProjectCard
 import pandas as pd
