@@ -1,7 +1,8 @@
 import os
 import yaml
 import pytest
-from network_wrangler import ProjectCard
+# from network_wrangler import ProjectCard
+import network_wrangler
 import pandas as pd
 
 
