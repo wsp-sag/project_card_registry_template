@@ -4,6 +4,9 @@ on: [push]
 
 jobs:
   build:
+    defaults:
+      run:
+        working-directory: ./registry
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v2
