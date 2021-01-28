@@ -13,9 +13,11 @@ jobs:
         python-version: 3.8
     - name: Install dependencies
       run: |
+        cd /
         python -m pip install --upgrade pip
         python -m pip install --user network_wrangler
     - name: Update registry
       run: |
         export "PATH=/home/runner/.local/bin:$PATH"
+        export "PYTHONPATH=/home/runner/.local/bin:$PYTHONPATH"
         python -m update_registry.py
