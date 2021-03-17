@@ -15,7 +15,7 @@ jobs:
       run: |
         export "PATH=/home/runner/.local/bin:$PATH"
         python -m pip install --upgrade pip
-        python -m pip install -e --user network_wrangler
+        python -m pip install --user -e network_wrangler
     - name: Update registry
       run: |
         python -m update_registry.py
