@@ -15,7 +15,7 @@ jobs:
       run: |
         export "PATH=/home/runner/.local/bin:$PATH"
         python -m pip install --upgrade pip
-        python -m pip install --user -e network_wrangler
+        pip install --user -e git+https://github.com/wsp-sag/network_wrangler.git@master#egg=network_wrangler
     - name: Update registry
       run: |
         python -m update_registry.py
