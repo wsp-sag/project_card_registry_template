@@ -16,6 +16,10 @@ jobs:
         export "PATH=/home/runner/.local/bin:$PATH"
         python -m pip install --upgrade pip
         pip install --user -e git+https://github.com/wsp-sag/network_wrangler.git@master#egg=network_wrangler
+    - uses: actions/checkout@v2
     - name: Update registry
       run: |
         python -m update_registry.py
+        git config user.name "DavidOry"
+        git config user.name "david.ory@gmail.com"
+        if [[ $(git status -uno --short) ]]; then git add node_registry.csv && git commit -m "update registry" && git push; fi
