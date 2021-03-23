@@ -28,7 +28,7 @@ with open(filename_config, "r") as config_file:
 
 for card_filename in card_filenames:
     write_updated_card = False
-    card = ProjectCard.read(card_filename, validate = False)
+    card = ProjectCard.read(card_filename, validate=False)
     card_dict = card.__dict__
 
     if (card_dict['category'] == 'New Roadway'):
@@ -46,8 +46,9 @@ for card_filename in card_filenames:
                 raise ValueError(msg)
 
             if (new_node not in node_df['node'].values):
-                df = pd.DataFrame({'node':[new_node],
-                        'project':[card_dict['project']]})
+                df = pd.DataFrame(
+                    {'node': [new_node], 'project': [card_dict['project']]}
+                )
                 node_df = node_df.append(df)
             else:
                 number = 1 + node_df['node'].max()
@@ -58,7 +59,9 @@ for card_filename in card_filenames:
                     if (card_dict['links'][i]['B'] == new_node):
                         card_dict['links'][i]['B'] = number
 
-                df = pd.DataFrame({'node':[number],'project':[card_dict['project']]})
+                df = pd.DataFrame(
+                    {'node': [number], 'project': [card_dict['project']]}
+                )
                 node_df = node_df.append(df)
                 write_updated_card = True
 
@@ -67,6 +70,6 @@ for card_filename in card_filenames:
     if (write_updated_card):
         card.__dict__.update(card_dict)
         name, extension = os.path.splitext(card_filename)
-        card.write(filename = (name + '_updated' + extension))
+        card.write(filename=(name + '_updated' + extension))
 
-node_df.to_csv(filename_output_node, index = False)
+node_df.to_csv(filename_output_node, index=False)
