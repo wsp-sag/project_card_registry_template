@@ -26,7 +26,7 @@ jobs:
           git config --local user.email "david.ory@gmail.com"
           git config --local user.name "DavidOry"
           git add -A
-          git commit -m "update registry (Action)" -a
+          git commit -m "GitHub Action automated registry update" -a
 
       - name: push changes
         uses: ad-m/github-push-action@v0.6.0

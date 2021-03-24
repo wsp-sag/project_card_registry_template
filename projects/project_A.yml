@@ -8,8 +8,8 @@ dependencies:
 valid: false
 category: New Roadway
 links:
-- A: 1003
-  B: 1004
+- A: 1001
+  B: 1002
   distance: 0.15
   name: Main Street
   lanes: 2
@@ -32,4 +32,3 @@ nodes:
   transit_node: 0
   walk_node: 1
   model_node_id: 1004
-file: ./projects/project_A.yml
