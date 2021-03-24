@@ -63,7 +63,6 @@ for card_filename in card_filenames:
 
     if (write_updated_card):
         card.__dict__.update(card_dict)
-#        name, extension = os.path.splitext(card_filename)
         card.write(filename=card_filename)
 
 node_df.to_csv(filename_node, index=False)
