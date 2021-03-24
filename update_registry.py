@@ -4,15 +4,10 @@ import pytest
 from network_wrangler import ProjectCard
 import pandas as pd
 
-
-input_dir = os.path.dirname(os.path.dirname(os.path.realpath(__file__)))
-card_dir = os.path.join(input_dir, 'projects')
-filename_node = os.path.join(input_dir, 'node_registry.csv')
-filename_output_node = os.path.join(
-    input_dir,
-    'test_node_registry_update.csv',
-)
-filename_config = os.path.join(input_dir, 'registry_config.yml')
+card_dir = os.path.join('.', 'projects')
+filename_node = 'node_registry.csv'
+filename_output_node = 'test_node_registry_update.csv'
+filename_config = 'registry_config.yml'
 
 card_filenames = []
 for (dirpath, dirnames, filenames) in os.walk(card_dir):
