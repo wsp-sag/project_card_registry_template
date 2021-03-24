@@ -24,11 +24,31 @@ nodes:
   drive_node: 1
   transit_node: 0
   walk_node: 1
-  model_node_id: 1003
+  model_node_id: !!python/object/apply:numpy.core.multiarray.scalar
+  - &id001 !!python/object/apply:numpy.dtype
+    args:
+    - i8
+    - false
+    - true
+    state: !!python/tuple
+    - 3
+    - <
+    - null
+    - null
+    - null
+    - -1
+    - -1
+    - 0
+  - !!binary |
+    7wMAAAAAAAA=
 - X: -93.14189
   Y: 44.87499
   bike_node: 1
   drive_node: 1
   transit_node: 0
   walk_node: 1
-  model_node_id: 1004
+  model_node_id: !!python/object/apply:numpy.core.multiarray.scalar
+  - *id001
+  - !!binary |
+    8AMAAAAAAAA=
+file: ./projects/project_A.yml
