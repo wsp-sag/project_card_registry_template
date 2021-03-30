@@ -1,54 +1,35 @@
 project: Project B
+valid: false
 tags:
-- registry example
+   - 'registry example'
 dependencies:
   prerequisites: []
   corequisites: []
   conflicts: []
-valid: false
 category: New Roadway
 links:
-- A: &id002 !!python/object/apply:numpy.core.multiarray.scalar
-  - &id001 !!python/object/apply:numpy.dtype
-    args:
-    - i8
-    - false
-    - true
-    state: !!python/tuple
-    - 3
-    - <
-    - null
-    - null
-    - null
-    - -1
-    - -1
-    - 0
-  - !!binary |
-    7QMAAAAAAAA=
-  B: &id003 !!python/object/apply:numpy.core.multiarray.scalar
-  - *id001
-  - !!binary |
-    7gMAAAAAAAA=
-  distance: 0.25
-  name: Broad Street
-  lanes: 2
-  bike_access: 1
-  drive_access: 1
-  transit_access: 0
-  walk_access: 1
+  - A: 1001
+    B: 1002
+    model_link_id: 501
+    distance : 0.2500
+    name: 'Broad Street'
+    lanes: 2
+    bike_access: 1
+    drive_access: 1
+    transit_access: 0
+    walk_access: 1
 nodes:
-- X: -93.14322
-  Y: 44.87414
-  bike_node: 0
-  drive_node: 1
-  transit_node: 0
-  walk_node: 0
-  model_node_id: *id002
-- X: -93.14273
-  Y: 44.87648
-  bike_node: 0
-  drive_node: 1
-  transit_node: 0
-  walk_node: 0
-  model_node_id: *id003
-file: ./projects/project_B.yml
+  - X: -93.14322
+    Y: 44.87414
+    bike_node: 0
+    drive_node: 1
+    transit_node: 0
+    walk_node: 0
+    model_node_id: 1001
+  - X: -93.14273
+    Y: 44.87648
+    bike_node: 0
+    drive_node: 1
+    transit_node: 0
+    walk_node: 0
+    model_node_id: 1002
