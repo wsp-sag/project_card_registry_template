@@ -33,4 +33,4 @@ nodes:
   transit_node: 0
   walk_node: 0
   model_node_id: 1004
-file: ./projects/project_A.yml
+file: ./reference_projects/project_A.yml

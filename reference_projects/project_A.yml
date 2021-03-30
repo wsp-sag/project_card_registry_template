@@ -10,6 +10,7 @@ category: New Roadway
 links:
   - A: 1001
     B: 1002
+    model_link_id: 501
     distance : 0.15
     name: 'Main Street'
     lanes: 2
