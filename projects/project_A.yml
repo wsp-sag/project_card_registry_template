@@ -8,9 +8,31 @@ dependencies:
 valid: false
 category: New Roadway
 links:
-- A: 1003
-  B: 1004
-  model_link_id: 502
+- A: &id002 !!python/object/apply:numpy.core.multiarray.scalar
+  - &id001 !!python/object/apply:numpy.dtype
+    args:
+    - i8
+    - false
+    - true
+    state: !!python/tuple
+    - 3
+    - <
+    - null
+    - null
+    - null
+    - -1
+    - -1
+    - 0
+  - !!binary |
+    7wMAAAAAAAA=
+  B: &id003 !!python/object/apply:numpy.core.multiarray.scalar
+  - *id001
+  - !!binary |
+    8AMAAAAAAAA=
+  model_link_id: !!python/object/apply:numpy.core.multiarray.scalar
+  - *id001
+  - !!binary |
+    +AEAAAAAAAA=
   distance: 0.15
   name: Main Street
   lanes: 2
@@ -25,12 +47,12 @@ nodes:
   drive_node: 1
   transit_node: 0
   walk_node: 0
-  model_node_id: 1003
+  model_node_id: *id002
 - X: -93.14189
   Y: 44.87499
   bike_node: 0
   drive_node: 1
   transit_node: 0
   walk_node: 0
-  model_node_id: 1004
+  model_node_id: *id003
 file: ./projects/project_A.yml
