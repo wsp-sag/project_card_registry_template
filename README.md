@@ -11,7 +11,7 @@ Consider, for example, an existing base year network that includes nodes A, B, a
 3. Next, set the `start_link_number` in the `registry_config.yml` file. This number should be the largest link number used in your Network Wrangler base year network. 
 4. Add a Project Card to the `projects` directory. Commit the change to GitHub. That's it.
 
-## How Does this Work
+## How Does this Work?
 When a Project Card is added to the `projects` directory and committed to GitHub, the repository runs a set of procedures to do the following:
 1. Identify Project Cards that add roadway or transit links to the network.
 2. Warn the user if the new nodes or links are less than the `start_node_number` or `start_link_number` parameter.
