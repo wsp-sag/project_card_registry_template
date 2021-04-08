@@ -1,7 +1,6 @@
 import os
 import yaml
 import pytest
-from network_wrangler import ProjectCard
 import pandas as pd
 
 card_dir = os.path.join('.', 'projects')
