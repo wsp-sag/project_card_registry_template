@@ -6,7 +6,7 @@ from network_wrangler import ProjectCard
 
 
 def update_registry_database(
-    card_tuple: tuple, df: pd.DataFrame, config: dict, write_to_disk: bool
+    card_file_list: list, input_df: pd.DataFrame, config: dict, write_to_disk: bool
 ) -> pd.DataFrame:
     """
     Returns an updated registry dataframe.
@@ -20,21 +20,28 @@ def update_registry_database(
 
     """
 
-    s_node = config_dict["start_node_number"]
-    s_link = config_dict["start_link_number"]
+    s_node = config["start_node_number"]
+    s_link = config["start_link_number"]
+    out_df = input_df
 
-    for card in card_tuple:
-        df, needs_updating, card_dict = update_nodes(df, card[0], s_node)
-        df, needs_updating, card_dict = update_links(df, card[0], s_link)
-        if needs_updating:
-            card[0].__dict__.update(card_dict)
+    for c_f in card_file_list:
+        node_df, node_update, card_dict = _update_nodes(out_df, c_f[0], s_node)
+        link_df, link_update, card_dict = _update_links(out_df, c_f[0], s_link)
+        out_df = (
+            out_df.append(node_df, ignore_index=True)
+            .append(link_df, ignore_index=True)
+            .drop_duplicates()
+            .reset_index(drop=True)
+        )
+        if node_update or link_update:
+            c_f[0].__dict__.update(card_dict)
             if write_to_disk:
-                card[0].write(filename=card[1])
+                c_f[0].write(filename=c_f[1])
 
-    return df
+    return out_df
 
 
-def update_nodes(input_df: pd.DataFrame, card: ProjectCard, start: int):
+def _update_nodes(input_df: pd.DataFrame, card: ProjectCard, start: int):
     """
     Updates node entries in the registry database
     Args:
@@ -48,8 +55,8 @@ def update_nodes(input_df: pd.DataFrame, card: ProjectCard, start: int):
     """
 
     card_dict = card.__dict__
-    node_df = input_df[input_df["type"] == "node"]
     write_updated_card = False
+    node_df = input_df[input_df["type"] == "node"]
 
     if card_dict["category"] == "New Roadway":
         node_index = 0
@@ -62,7 +69,7 @@ def update_nodes(input_df: pd.DataFrame, card: ProjectCard, start: int):
                 )
                 raise ValueError(msg)
 
-            if new_node not in node_df["number"].values:
+            if new_node not in node_df["id"].values:
                 df = pd.DataFrame(
                     {
                         "type": "node",
@@ -72,7 +79,7 @@ def update_nodes(input_df: pd.DataFrame, card: ProjectCard, start: int):
                 )
                 node_df = node_df.append(df)
             else:
-                number = 1 + node_df["number"].max()
+                number = 1 + node_df["id"].max()
                 card_dict["nodes"][node_index]["model_node_id"] = number
                 for i in range(0, len(card_dict["links"])):
                     if card_dict["links"][i]["A"] == new_node:
@@ -94,7 +101,7 @@ def update_nodes(input_df: pd.DataFrame, card: ProjectCard, start: int):
     return node_df, write_updated_card, card_dict
 
 
-def update_links(input_df: pd.DataFrame, card: ProjectCard, start: int):
+def _update_links(input_df: pd.DataFrame, card: ProjectCard, start: int):
     """
     Updates link entries in the registry database
     Args:
@@ -106,8 +113,8 @@ def update_links(input_df: pd.DataFrame, card: ProjectCard, start: int):
     """
 
     card_dict = card.__dict__
-    link_df = input_df[input_df["type"] == "link"]
     write_updated_card = False
+    link_df = input_df[input_df["type"] == "link"]
 
     link_index = 0
     for link in card_dict["links"]:
@@ -120,7 +127,7 @@ def update_links(input_df: pd.DataFrame, card: ProjectCard, start: int):
             )
             raise ValueError(msg)
 
-        if new_link not in link_df["number"].values:
+        if new_link not in link_df["id"].values:
             df = pd.DataFrame(
                 {
                     "type": "link",
@@ -130,7 +137,7 @@ def update_links(input_df: pd.DataFrame, card: ProjectCard, start: int):
             )
             link_df = link_df.append(df)
         else:
-            number = 1 + link_df["number"].max()
+            number = 1 + link_df["id"].max()
             card_dict["links"][link_index]["model_link_id"] = number
             for i in range(0, len(card_dict["links"])):
                 if card_dict["links"][i]["model_link_id"] == new_link:
