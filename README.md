@@ -8,11 +8,12 @@ Consider, for example, an existing base year network that includes nodes A, B, a
 ## Instructions
 1. This repository is a [`template`](https://docs.github.com/en/github/creating-cloning-and-archiving-repositories/creating-a-repository-from-a-template), meaning it is designed to be used to create repositories that have the same functionality.
 2. To get started, set the `start_node_number` in the `registry_config.yml` file. This number should be the largest node number used in your Network Wrangler base year network.
-3. Add a Project Card to the `projects` directory. Commit the change to GitHub. That's it.
+3. Next, set the `start_link_number` in the `registry_config.yml` file. This number should be the largest link number used in your Network Wrangler base year network. 
+4. Add a Project Card to the `projects` directory. Commit the change to GitHub. That's it.
 
-## How Does this Work
+## How Does this Work?
 When a Project Card is added to the `projects` directory and committed to GitHub, the repository runs a set of procedures to do the following:
 1. Identify Project Cards that add roadway or transit links to the network.
-2. Warn the user if the new nodes are less than the `start_node_number` parameter.
-3. Update the `node_registry.csv` database with the new nodes, identifying the project that adds them.
-4. If a Project Card that adds links conflicts with nodes identified in the `node_registry`, these nodes are updated to use a node number that is note in the registry. The Project Cards are updated accordingly.
+2. Warn the user if the new nodes or links are less than the `start_node_number` or `start_link_number` parameter.
+3. Update the `registry.csv` database with the new nodes and/or new links, identifying the project that adds them.
+4. If a Project Card that adds links conflicts with nodes or links identified in the `registry.csv` database, these nodes and links are updated to use a node or link number that is not in the registry. The Project Cards are updated accordingly.
