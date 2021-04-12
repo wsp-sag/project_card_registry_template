@@ -17,7 +17,7 @@ To run with print statments, use `pytest -s -m update_registry`
 """
 
 
-@pytest.mark.basic
+@pytest.mark.ci
 @pytest.mark.update_registry
 def test_update_registry(request):
 
@@ -48,7 +48,7 @@ def test_update_registry(request):
     assert target_df.equals(outcome_df) is True
 
 
-@pytest.mark.basic
+@pytest.mark.ci
 @pytest.mark.update_registry
 def test_update_registry_existing(request):
 
