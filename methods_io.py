@@ -24,18 +24,34 @@ def read_project_cards(card_dir: str = CARD_DIR) -> list:
                 card_file = os.path.join(card_dir, filename)
                 try:
                     card = ProjectCard.read(card_file, validate=True)
-                except:
+                except ValidationError as exc:
                     msg = "Card ({}) did not validate. Trying without validation.".format(
                         card_file,
                     )
                     warnings.warn(msg)
+                    warnings.warn(exc.message)
+                except SchemaError as exc:
+                    msg = "Card ({}) did not validate. Trying without validation.".format(
+                        card_file,
+                    )
+                    warnings.warn(msg)
+                    warnings.warn(exc.message)
+                except yaml.YAMLError as exc:
+                    msg = "Card ({}) did not validate. Trying without validation.".format(
+                        card_file,
+                    )
+                    warnings.warn(msg)
+                    warnings.warn(exc.message)
+                else:
+                    pass
+                finally:
                     try:
                         card = ProjectCard.read(card_file, validate=False)
-                    except:
+                    except ValueError as exc:
                         msg = "Card ({}) could not be read (even without validation).".format(
                             card_file,
                         )
-                        raise ValueError(msg)
+                        raise ValueError(msg + exc.message)
 
                 card = ProjectCard.read(card_file, validate=False)
                 card_file_list.append((card, card_file))
