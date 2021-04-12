@@ -31,6 +31,4 @@ def update_registry(
 
 
 if __name__ == "__main__":
-    update_registry(
-        config_file, input_reg_file, output_reg_file, card_dir, write_card_updates
-    )
+    update_registry()
