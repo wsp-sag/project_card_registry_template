@@ -1,4 +1,5 @@
 import os
+import warnings
 import pytest
 from network_wrangler import ProjectCard
 
@@ -21,6 +22,21 @@ def read_project_cards(card_dir: str = CARD_DIR) -> list:
             name, extension = os.path.splitext(filename)
             if extension in [".yml", ".yaml"]:
                 card_file = os.path.join(card_dir, filename)
+                try:
+                    card = ProjectCard.read(card_file, validate=True)
+                except:
+                    msg = "Card ({}) did not validate. Trying without validation.".format(
+                        card_file,
+                    )
+                    warnings.warn(msg)
+                    try:
+                        card = ProjectCard.read(card_file, validate=False)
+                    except:
+                        msg = "Card ({}) could not be read (even without validation).".format(
+                            card_file,
+                        )
+                        raise ValueError(msg)
+
                 card = ProjectCard.read(card_file, validate=False)
                 card_file_list.append((card, card_file))
 

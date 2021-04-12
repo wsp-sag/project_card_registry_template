@@ -3,8 +3,8 @@ import yaml
 import pytest
 import pandas as pd
 
-from read_project_cards import read_project_cards
-from update_registry_database import update_registry_database
+from methods_io import read_project_cards
+from methods_add_cards import add_cards_to_registry
 
 CARD_DIR = os.path.join(".", "projects")
 REGISTRY_FILE = "registry.csv"
@@ -24,7 +24,7 @@ def update_registry(
         config_dict = yaml.safe_load(file)
 
     card_file_list = read_project_cards(card_dir)
-    df = update_registry_database(
+    df = add_cards_to_registry(
         card_file_list, input_reg_df, config_dict, write_card_updates
     )
     df.to_csv(output_reg_file, index=False)

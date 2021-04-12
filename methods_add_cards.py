@@ -2,19 +2,20 @@ import os
 import yaml
 import pytest
 import pandas as pd
+from typing import Tuple
 from network_wrangler import ProjectCard
 
 
-def update_registry_database(
+def add_cards_to_registry(
     card_file_list: list, input_df: pd.DataFrame, config: dict, write_to_disk: bool
 ) -> pd.DataFrame:
     """
     Returns an updated registry dataframe.
     Args:
-        cards_tuple: a list of project cards and their filenames
-        df: input registry DataFrame
+        card_file_list: a list of project cards and their filenames
+        df: input registry DataFrame. See the format in `registry.csv`.
         config: input configuration
-        write_cards: a boolean indicating whether project card updates should be written to disk
+        write_cards: a boolean indicating whether project card updates should be written to disk. If True, the input project cards will be overwritten.
     Returns:
         Registry DataFrame updated
 
@@ -24,9 +25,13 @@ def update_registry_database(
     s_link = config["start_link_number"]
     out_df = input_df
 
-    for c_f in card_file_list:
-        node_df, node_update, card_dict = _update_nodes(out_df, c_f[0], s_node)
-        link_df, link_update, card_dict = _update_links(out_df, c_f[0], s_link)
+    for card, filename in card_file_list:
+        node_df, node_update, updated_card_dict = _update_registry_nodes(
+            out_df, card, s_node
+        )
+        link_df, link_update, updated_card_dict = _update_registry_links(
+            out_df, card, s_link
+        )
         out_df = (
             out_df.append(node_df, ignore_index=True)
             .append(link_df, ignore_index=True)
@@ -34,14 +39,16 @@ def update_registry_database(
             .reset_index(drop=True)
         )
         if node_update or link_update:
-            c_f[0].__dict__.update(card_dict)
+            card.__dict__.update(updated_card_dict)
             if write_to_disk:
-                c_f[0].write(filename=c_f[1])
+                card.write(filename=filename)
 
     return out_df
 
 
-def _update_nodes(input_df: pd.DataFrame, card: ProjectCard, start: int):
+def _update_registry_nodes(
+    input_df: pd.DataFrame, card: ProjectCard, start: int
+) -> Tuple[pd.DataFrame, bool, dict]:
     """
     Updates node entries in the registry database
     Args:
@@ -70,14 +77,14 @@ def _update_nodes(input_df: pd.DataFrame, card: ProjectCard, start: int):
                 raise ValueError(msg)
 
             if new_node not in node_df["id"].values:
-                df = pd.DataFrame(
+                node_updates_df = pd.DataFrame(
                     {
                         "type": "node",
                         "id": [new_node],
                         "project_added": [card_dict["project"]],
                     }
                 )
-                node_df = node_df.append(df)
+                node_df = node_df.append(node_updates_df)
             else:
                 number = 1 + node_df["id"].max()
                 card_dict["nodes"][node_index]["model_node_id"] = number
@@ -86,14 +93,14 @@ def _update_nodes(input_df: pd.DataFrame, card: ProjectCard, start: int):
                         card_dict["links"][i]["A"] = number
                     if card_dict["links"][i]["B"] == new_node:
                         card_dict["links"][i]["B"] = number
-                df = pd.DataFrame(
+                node_updates_df = pd.DataFrame(
                     {
                         "type": "node",
                         "id": [number],
                         "project_added": [card_dict["project"]],
                     }
                 )
-                node_df = node_df.append(df)
+                node_df = node_df.append(node_updates_df)
                 write_updated_card = True
 
             node_index = node_index + 1
@@ -101,7 +108,9 @@ def _update_nodes(input_df: pd.DataFrame, card: ProjectCard, start: int):
     return node_df, write_updated_card, card_dict
 
 
-def _update_links(input_df: pd.DataFrame, card: ProjectCard, start: int):
+def _update_registry_links(
+    input_df: pd.DataFrame, card: ProjectCard, start: int
+) -> Tuple[pd.DataFrame, bool, dict]:
     """
     Updates link entries in the registry database
     Args:
@@ -128,28 +137,28 @@ def _update_links(input_df: pd.DataFrame, card: ProjectCard, start: int):
             raise ValueError(msg)
 
         if new_link not in link_df["id"].values:
-            df = pd.DataFrame(
+            link_updates_df = pd.DataFrame(
                 {
                     "type": "link",
                     "id": [new_link],
                     "project_added": [card_dict["project"]],
                 }
             )
-            link_df = link_df.append(df)
+            link_df = link_df.append(link_updates_df)
         else:
             number = 1 + link_df["id"].max()
             card_dict["links"][link_index]["model_link_id"] = number
             for i in range(0, len(card_dict["links"])):
                 if card_dict["links"][i]["model_link_id"] == new_link:
                     card_dict["links"][i]["model_link_id"] = number
-            df = pd.DataFrame(
+            link_updates_df = pd.DataFrame(
                 {
                     "type": "link",
                     "id": [number],
                     "project_added": [card_dict["project"]],
                 }
             )
-            link_df = link_df.append(df)
+            link_df = link_df.append(link_updates_df)
             write_updated_card = True
 
         link_index = link_index + 1
