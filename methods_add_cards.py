@@ -15,22 +15,29 @@ def add_cards_to_registry(
         card_file_list: a list of project cards and their filenames
         df: input registry DataFrame. See the format in `registry.csv`.
         config: input configuration
-        write_cards: a boolean indicating whether project card updates should be written to disk. If True, the input project cards will be overwritten.
+        write_cards: a boolean indicating whether project card updates should be written
+            to disk. If True, the input project cards will be overwritten.
     Returns:
         Registry DataFrame updated
 
     """
 
-    s_node = config["start_node_number"]
-    s_link = config["start_link_number"]
+    nodes_in_use = _make_available("nodes", config)
+    links_in_use = _make_available("links", config)
     out_df = input_df
 
     for card, filename in card_file_list:
-        node_df, node_update, updated_card_dict = _update_registry_nodes(
-            out_df, card, s_node
+        node_df, node_update, updated_card_dict = _update_registry(
+            "nodes",
+            out_df,
+            card,
+            nodes_in_use,
         )
-        link_df, link_update, updated_card_dict = _update_registry_links(
-            out_df, card, s_link
+        link_df, link_update, updated_card_dict = _update_registry(
+            "links",
+            out_df,
+            card,
+            links_in_use,
         )
         out_df = (
             out_df.append(node_df, ignore_index=True)
@@ -46,12 +53,109 @@ def add_cards_to_registry(
     return out_df
 
 
-def _update_registry_nodes(
-    input_df: pd.DataFrame, card: ProjectCard, start: int
+def _make_available(nodes_or_links: str, config: dict) -> list:
+    """
+    Converts dictionary of available nodes and links to list of available nodes
+    Args:
+        nodes_or_links: string, either 'nodes' or 'links'
+        config: input configuration
+    Returns:
+        list of available nodes
+    """
+    if nodes_or_links == "nodes":
+        key_word = "nodes_used_by_geography"
+        min_id = config.get("minimum_allowable_node_id")
+        max_id = config.get("maximum_allowable_node_id")
+    else:
+        key_word = "links_used_by_geography"
+        min_id = config.get("minimum_allowable_link_id")
+        max_id = config.get("maximum_allowable_link_id")
+
+    subject_dict = config.get(key_word)
+
+    ids_in_use = {n: False for n in range(min_id, max_id + 1)}
+    for entry in subject_dict:
+        temp_start = entry.get("start")
+        temp_end = entry.get("end")
+        for id in range(temp_start, temp_end):
+            ids_in_use[id] = True
+
+    return ids_in_use
+
+
+def _is_id_in_allowable_range(
+    nodes_or_links: str,
+    project_name: str,
+    subject_id: int,
+    range_in_use: dict,
+):
+    if subject_id not in range_in_use:
+        msg = (
+            "New {} id ({}) in project '{}' is not in the base networks allowable range"
+            "({} to {}) as defined in the configuration file.".format(
+                nodes_or_links,
+                project_name,
+                min(range_in_use.keys()),
+                max(range_in_use.keys()),
+            )
+        )
+        raise ValueError(msg)
+
+
+def _is_id_used_in_base_network(
+    nodes_or_links: str,
+    project_name: str,
+    subject_id: int,
+    range_in_use: dict,
+):
+    if subject_id in range_in_use:
+        if range_in_use[subject_id] == True:
+            msg = (
+                "New {} id ({}) in project '{}' is in use in the base network. "
+                "Please check that the base network {}s are defined correctly in "
+                "the config file.".format(
+                    nodes_or_links,
+                    subject_id,
+                    project_name,
+                    nodes_or_links,
+                )
+            )
+            raise ValueError(msg)
+
+
+def _find_available_id(
+    nodes_or_links: str,
+    subject_id: str,
+    range_in_use: dict,
+    subject_df: pd.DataFrame,
+    project_name: str,
+) -> int:
+
+    number = subject_id
+    for i in range(subject_id, max(range_in_use.keys())):
+        if i not in subject_df["id"].values:
+            if range_in_use[i] == False:
+                number = i
+                break
+
+    if number == subject_id:
+        msg = "Software failed to find an available number for {} id ({}) in project '{}'. " "Please check that the base network {}s are defined correctly in the config file.".format(
+            nodes_or_links,
+            subject_id,
+            project_name,
+            nodes_or_links,
+        )
+
+    return number
+
+
+def _update_registry(
+    nodes_or_links: str, input_df: pd.DataFrame, card: ProjectCard, range_in_use: dict
 ) -> Tuple[pd.DataFrame, bool, dict]:
     """
     Updates node entries in the registry database
     Args:
+        nodes_or_links: input string, 'nodes' or 'links'
         input_df: input registry DataFrame
         card: ProjectCard
         start: largest node number in the existing network
@@ -63,104 +167,54 @@ def _update_registry_nodes(
 
     card_dict = card.__dict__
     write_updated_card = False
-    node_df = input_df[input_df["type"] == "node"]
+
+    if nodes_or_links == "nodes":
+        subject_word = "node"
+        subject_id_word = "model_node_id"
+    else:
+        subject_word = "link"
+        subject_id_word = "model_link_id"
+
+    subject_df = input_df[input_df["type"] == subject_word]
 
     if card_dict["category"] == "New Roadway":
-        node_index = 0
-        for node in card_dict["nodes"]:
-            new_node = node["model_node_id"]
-            if new_node <= start:
-                msg = "New node number ({}) in project '{}' is less than the \
-                 starting node number in config file of {}".format(
-                    new_node, card_dict["project"], start,
-                )
-                raise ValueError(msg)
+        for subject_index, subject in enumerate(card_dict[nodes_or_links]):
+            new_id = subject[subject_id_word]
 
-            if new_node not in node_df["id"].values:
-                node_updates_df = pd.DataFrame(
+            _is_id_in_allowable_range(
+                subject_word, card_dict["project"], new_id, range_in_use
+            )
+            _is_id_used_in_base_network(
+                subject_word, card_dict["project"], new_id, range_in_use
+            )
+            if new_id not in subject_df["id"].values:
+                updates_df = pd.DataFrame(
                     {
-                        "type": "node",
-                        "id": [new_node],
+                        "type": subject_word,
+                        "id": [new_id],
                         "project_added": [card_dict["project"]],
                     }
                 )
-                node_df = node_df.append(node_updates_df)
+                subject_df = subject_df.append(updates_df)
             else:
-                number = 1 + node_df["id"].max()
-                card_dict["nodes"][node_index]["model_node_id"] = number
+                number = _find_available_id(
+                    subject_word, new_id, range_in_use, subject_df, card_dict["project"]
+                )
+                card_dict[nodes_or_links][subject_index][subject_id_word] = number
                 for i in range(0, len(card_dict["links"])):
-                    if card_dict["links"][i]["A"] == new_node:
-                        card_dict["links"][i]["A"] = number
-                    if card_dict["links"][i]["B"] == new_node:
-                        card_dict["links"][i]["B"] = number
-                node_updates_df = pd.DataFrame(
+                    if nodes_or_links == "nodes":
+                        if card_dict["links"][i]["A"] == new_id:
+                            card_dict["links"][i]["A"] = number
+                        if card_dict["links"][i]["B"] == new_id:
+                            card_dict["links"][i]["B"] = number
+                updates_df = pd.DataFrame(
                     {
-                        "type": "node",
+                        "type": subject_word,
                         "id": [number],
                         "project_added": [card_dict["project"]],
                     }
                 )
-                node_df = node_df.append(node_updates_df)
+                subject_df = subject_df.append(updates_df)
                 write_updated_card = True
 
-            node_index = node_index + 1
-
-    return node_df, write_updated_card, card_dict
-
-
-def _update_registry_links(
-    input_df: pd.DataFrame, card: ProjectCard, start: int
-) -> Tuple[pd.DataFrame, bool, dict]:
-    """
-    Updates link entries in the registry database
-    Args:
-        input_df: input registry DataFrame
-        card: ProjectCard
-        start: largest link number in the existing network
-    Returns:
-        An updated registry database with new link entries
-    """
-
-    card_dict = card.__dict__
-    write_updated_card = False
-    link_df = input_df[input_df["type"] == "link"]
-
-    link_index = 0
-    for link in card_dict["links"]:
-        new_link = link["model_link_id"]
-
-        if new_link <= start:
-            msg = "New link id ({}) in project '{}' is less than the \
-            starting link number in config file of {}".format(
-                new_link, card_dict["project"], start,
-            )
-            raise ValueError(msg)
-
-        if new_link not in link_df["id"].values:
-            link_updates_df = pd.DataFrame(
-                {
-                    "type": "link",
-                    "id": [new_link],
-                    "project_added": [card_dict["project"]],
-                }
-            )
-            link_df = link_df.append(link_updates_df)
-        else:
-            number = 1 + link_df["id"].max()
-            card_dict["links"][link_index]["model_link_id"] = number
-            for i in range(0, len(card_dict["links"])):
-                if card_dict["links"][i]["model_link_id"] == new_link:
-                    card_dict["links"][i]["model_link_id"] = number
-            link_updates_df = pd.DataFrame(
-                {
-                    "type": "link",
-                    "id": [number],
-                    "project_added": [card_dict["project"]],
-                }
-            )
-            link_df = link_df.append(link_updates_df)
-            write_updated_card = True
-
-        link_index = link_index + 1
-
-    return link_df, write_updated_card, card_dict
+    return subject_df, write_updated_card, card_dict
