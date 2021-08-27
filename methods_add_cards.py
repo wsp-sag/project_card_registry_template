@@ -1,6 +1,3 @@
-import os
-import yaml
-import pytest
 import pandas as pd
 from typing import Tuple
 from network_wrangler import ProjectCard
@@ -11,12 +8,14 @@ def add_cards_to_registry(
 ) -> pd.DataFrame:
     """
     Returns an updated registry dataframe.
+
     Args:
         card_file_list: a list of project cards and their filenames
         df: input registry DataFrame. See the format in `registry.csv`.
         config: input configuration
         write_cards: a boolean indicating whether project card updates should be written
             to disk. If True, the input project cards will be overwritten.
+
     Returns:
         Registry DataFrame updated
 
@@ -89,6 +88,18 @@ def _is_id_in_allowable_range(
     subject_id: int,
     range_in_use: dict,
 ):
+    """
+    Checks if the new node or link id is in the allowable range defined in the config file
+
+    Args:
+        nodes_or_links (str): "node" or "link", which is used in error message
+        project_name (str): project name, which is used in error message
+        subject_id (int): the proposed new node or link id number
+        range_in_use (dict): a dictionary defining the id range with a bool indicating if the id number is used in the base network
+
+    Raises:
+        ValueError: informs the user of the disconnect between config file and the Project Card
+    """
     if subject_id not in range_in_use:
         msg = (
             "New {} id ({}) in project '{}' is not in the base networks allowable range"
@@ -108,6 +119,18 @@ def _is_id_used_in_base_network(
     subject_id: int,
     range_in_use: dict,
 ):
+    """
+    Checks if new node or link id is used in the base network as defined in the config file
+
+    Args:
+        nodes_or_links (str): "node" or "link", which is used in error message
+        project_name (str): project name, which is used in error message
+        subject_id (int): the proposed new node or link id number
+        range_in_use (dict): a dictionary defining the id range with a bool indicating if the id number is used in the base network
+
+    Raises:
+        ValueError: informs the user of the disconnect between the config file and the Project Card
+    """
     if subject_id in range_in_use:
         if range_in_use[subject_id] == True:
             msg = (
@@ -125,11 +148,25 @@ def _is_id_used_in_base_network(
 
 def _find_available_id(
     nodes_or_links: str,
+    project_name: str,
     subject_id: str,
     range_in_use: dict,
     subject_df: pd.DataFrame,
-    project_name: str,
 ) -> int:
+    """
+    If the node or link id is already in the registry and we need to find a new number, this method iterates up from
+    the proposed node number to find the next available id, which it returns.
+
+    Args:
+        nodes_or_links (str): "node" or "link", which is used in error message
+        project_name (str): project name, which is used in error message
+        subject_id (int): the proposed new node or link id number
+        range_in_use (dict): a dictionary defining the id range with a bool indicating if the id number is used in the base network
+        subject_df (pd.DataFrame): node or link registry dataframe
+
+    Returns:
+        int: available node or link id
+    """
 
     number = subject_id
     for i in range(subject_id, max(range_in_use.keys())):
@@ -153,12 +190,14 @@ def _update_registry(
     nodes_or_links: str, input_df: pd.DataFrame, card: ProjectCard, range_in_use: dict
 ) -> Tuple[pd.DataFrame, bool, dict]:
     """
-    Updates node entries in the registry database
+    Updates node or link entries in the registry database
+
     Args:
         nodes_or_links: input string, 'nodes' or 'links'
         input_df: input registry DataFrame
         card: ProjectCard
         start: largest node number in the existing network
+
     Returns:
         An updated registry database with new node entries
         A flag as to whether the card needs to be modified
@@ -198,7 +237,11 @@ def _update_registry(
                 subject_df = subject_df.append(updates_df)
             else:
                 number = _find_available_id(
-                    subject_word, new_id, range_in_use, subject_df, card_dict["project"]
+                    subject_word,
+                    card_dict["project"],
+                    new_id,
+                    range_in_use,
+                    subject_df,
                 )
                 card_dict[nodes_or_links][subject_index][subject_id_word] = number
                 for i in range(0, len(card_dict["links"])):
