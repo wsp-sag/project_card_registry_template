@@ -26,28 +26,30 @@ def add_cards_to_registry(
     out_df = input_df
 
     for card, filename in card_file_list:
-        node_df, node_update, updated_card_dict = _update_registry(
-            "nodes",
-            out_df,
-            card,
-            nodes_in_use,
-        )
-        link_df, link_update, updated_card_dict = _update_registry(
-            "links",
-            out_df,
-            card,
-            links_in_use,
-        )
-        out_df = (
-            out_df.append(node_df, ignore_index=True)
-            .append(link_df, ignore_index=True)
-            .drop_duplicates()
-            .reset_index(drop=True)
-        )
-        if node_update or link_update:
-            card.__dict__.update(updated_card_dict)
-            if write_to_disk:
-                card.write(filename=filename)
+        card_dict = card.__dict__
+        if card_dict["project"] not in input_df["project_added"].values:
+            node_df, node_update, updated_card_dict = _update_registry(
+                "nodes",
+                out_df,
+                card,
+                nodes_in_use,
+            )
+            link_df, link_update, updated_card_dict = _update_registry(
+                "links",
+                out_df,
+                card,
+                links_in_use,
+            )
+            out_df = (
+                out_df.append(node_df, ignore_index=True)
+                .append(link_df, ignore_index=True)
+                .drop_duplicates()
+                .reset_index(drop=True)
+            )
+            if node_update or link_update:
+                card.__dict__.update(updated_card_dict)
+                if write_to_disk:
+                    card.write(filename=filename)
 
     return out_df
 
