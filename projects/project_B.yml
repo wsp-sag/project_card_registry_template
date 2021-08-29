@@ -8,9 +8,9 @@ dependencies:
 valid: false
 category: New Roadway
 links:
-- A: 1003
-  B: 1004
-  model_link_id: 502
+- A: 1007
+  B: 1008
+  model_link_id: 504
   distance: 0.25
   name: Broad Street
   lanes: 2
@@ -25,12 +25,12 @@ nodes:
   drive_node: 1
   transit_node: 0
   walk_node: 0
-  model_node_id: 1003
+  model_node_id: 1007
 - X: -93.14273
   Y: 44.87648
   bike_node: 0
   drive_node: 1
   transit_node: 0
   walk_node: 0
-  model_node_id: 1004
+  model_node_id: 1008
 file: ./projects/project_B.yml
