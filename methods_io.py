@@ -21,7 +21,7 @@ def read_project_cards(card_dir: str = CARD_DIR) -> list:
         for filename in filenames:
             name, extension = os.path.splitext(filename)
             if extension in [".yml", ".yaml"]:
-                card_file = os.path.join(card_dir, filename)
+                card_file = os.path.join(dirpath, filename)
                 card = ProjectCard.read(card_file, validate=False)
                 card_file_list.append((card, card_file))
 

@@ -11,9 +11,9 @@ def add_cards_to_registry(
 
     Args:
         card_file_list: a list of project cards and their filenames
-        df: input registry DataFrame. See the format in `registry.csv`.
+        input_df: input registry DataFrame. See the format in `registry.csv`.
         config: input configuration
-        write_cards: a boolean indicating whether project card updates should be written
+        write_to_disk: a boolean indicating whether project card updates should be written
             to disk. If True, the input project cards will be overwritten.
 
     Returns:
@@ -28,24 +28,33 @@ def add_cards_to_registry(
     for card, filename in card_file_list:
         card_dict = card.__dict__
         if card_dict["project"] not in input_df["project_added"].values:
-            node_df, node_update, updated_card_dict = _update_registry(
-                "nodes",
-                out_df,
-                card,
-                nodes_in_use,
-            )
+            if card_dict.get("nodes") is not None:
+                node_df, node_update, updated_card_dict = _update_registry(
+                    "nodes",
+                    out_df,
+                    card,
+                    nodes_in_use,
+                )
+            else: 
+                node_df = None
+                node_update = False
+
             link_df, link_update, updated_card_dict = _update_registry(
                 "links",
                 out_df,
                 card,
                 links_in_use,
             )
+            
+            if node_df is not None:
+                out_df = out_df.append(node_df, ignore_index=True)
+            
             out_df = (
-                out_df.append(node_df, ignore_index=True)
-                .append(link_df, ignore_index=True)
+                out_df.append(link_df, ignore_index=True)
                 .drop_duplicates()
                 .reset_index(drop=True)
             )
+            
             if node_update or link_update:
                 card.__dict__.update(updated_card_dict)
                 if write_to_disk:
@@ -246,8 +255,8 @@ def _update_registry(
                     subject_df,
                 )
                 card_dict[nodes_or_links][subject_index][subject_id_word] = number
-                for i in range(0, len(card_dict["links"])):
-                    if nodes_or_links == "nodes":
+                if nodes_or_links == "nodes":
+                    for i in range(0, len(card_dict["links"])):
                         if card_dict["links"][i]["A"] == new_id:
                             card_dict["links"][i]["A"] = number
                         if card_dict["links"][i]["B"] == new_id:
