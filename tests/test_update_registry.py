@@ -32,7 +32,7 @@ def test_update_registry(request):
         config_file="registry_config.yml",
         input_reg_file=input_file,
         output_reg_file=output_file,
-        card_dir=os.path.join(".", "reference_projects"),
+        card_dir=os.path.join(".", "tests", "projects", "project_AB"),
         write_card_updates=False,
     )
 
@@ -88,7 +88,7 @@ def test_update_registry_existing(request):
         config_file="registry_config.yml",
         input_reg_file=input_file,
         output_reg_file=output_file,
-        card_dir=os.path.join(".", "reference_projects"),
+        card_dir=os.path.join(".", "tests", "projects", "project_AB"),
         write_card_updates=False,
     )
 
@@ -154,7 +154,7 @@ def test_update_registry_no_new_projects(request):
         config_file="registry_config.yml",
         input_reg_file=input_file,
         output_reg_file=output_file,
-        card_dir=os.path.join(".", "reference_projects"),
+        card_dir=os.path.join(".", "tests", "projects", "project_AB"),
         write_card_updates=False,
     )
 
@@ -190,3 +190,38 @@ def test_update_registry_no_new_projects(request):
         target_i_df.equals(outcome_df) is True
         or target_ii_df.equals(outcome_df) is True
     )
+
+
+@pytest.mark.ci
+@pytest.mark.update_registry
+def test_update_registry_no_new_nodes(request):
+
+    input_file = "test_input_registry.csv"
+    output_file = "test_update_registry.csv"
+
+    data = []
+    input_df = pd.DataFrame(data, columns=["type", "id", "project_added"])
+    input_df.to_csv(input_file, index=False)
+
+    update_registry(
+        config_file="registry_config.yml",
+        input_reg_file=input_file,
+        output_reg_file=output_file,
+        card_dir=os.path.join(".", "tests", "projects", "project_C"),
+        write_card_updates=False,
+    )
+
+    data = [
+        ["link", 501, "Project C"],
+    ]
+    
+    target_df = pd.DataFrame(data, columns=["type", "id", "project_added"])
+    target_df = target_df.sort_values(by=["type", "id"]).reset_index(drop=True)
+    
+    outcome_df = pd.read_csv(output_file)
+    outcome_df = outcome_df.sort_values(by=["type", "id"]).reset_index(drop=True)
+    
+    os.remove(input_file)
+    os.remove(output_file)
+    
+    assert (target_df.equals(outcome_df) is True)
