@@ -18,6 +18,7 @@ To run with print statments, use `pytest -s -m update_registry`
 
 
 @pytest.mark.ci
+@pytest.mark.donkey
 @pytest.mark.update_registry
 def test_update_registry(request):
 
@@ -59,7 +60,7 @@ def test_update_registry(request):
     target_ii_df = target_ii_df.sort_values(by=["type", "id"]).reset_index(drop=True)
 
     outcome_df = pd.read_csv(output_file)
-    outcome_df = outcome_df.sort_values(by=["type", "id"]).reset_index(drop=True)
+    outcome_df = outcome_df[["type", "id", "project_added"]].sort_values(by=["type", "id"]).reset_index(drop=True)
 
     os.remove(input_file)
     os.remove(output_file)
@@ -181,7 +182,7 @@ def test_update_registry_no_new_projects(request):
     target_ii_df = target_ii_df.sort_values(by=["type", "id"]).reset_index(drop=True)
 
     outcome_df = pd.read_csv(output_file)
-    outcome_df = outcome_df.sort_values(by=["type", "id"]).reset_index(drop=True)
+    outcome_df = outcome_df[["type", "id", "project_added"]].sort_values(by=["type", "id"]).reset_index(drop=True)
 
     os.remove(input_file)
     os.remove(output_file)
@@ -219,7 +220,7 @@ def test_update_registry_no_new_nodes(request):
     target_df = target_df.sort_values(by=["type", "id"]).reset_index(drop=True)
 
     outcome_df = pd.read_csv(output_file)
-    outcome_df = outcome_df.sort_values(by=["type", "id"]).reset_index(drop=True)
+    outcome_df = outcome_df[["type", "id", "project_added"]].sort_values(by=["type", "id"]).reset_index(drop=True)
 
     os.remove(input_file)
     os.remove(output_file)
