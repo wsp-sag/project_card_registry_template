@@ -121,7 +121,7 @@ def test_update_registry_existing(request):
     target_ii_df = target_ii_df.sort_values(by=["type", "id"]).reset_index(drop=True)
 
     outcome_df = pd.read_csv(output_file)
-    outcome_df = outcome_df.sort_values(by=["type", "id"]).reset_index(drop=True)
+    outcome_df = outcome_df[["type", "id", "project_added"]].sort_values(by=["type", "id"]).reset_index(drop=True)
 
     os.remove(input_file)
     os.remove(output_file)
@@ -214,14 +214,14 @@ def test_update_registry_no_new_nodes(request):
     data = [
         ["link", 501, "Project C"],
     ]
-    
+
     target_df = pd.DataFrame(data, columns=["type", "id", "project_added"])
     target_df = target_df.sort_values(by=["type", "id"]).reset_index(drop=True)
-    
+
     outcome_df = pd.read_csv(output_file)
     outcome_df = outcome_df.sort_values(by=["type", "id"]).reset_index(drop=True)
-    
+
     os.remove(input_file)
     os.remove(output_file)
-    
-    assert (target_df.equals(outcome_df) is True)
+
+    assert target_df.equals(outcome_df) is True
