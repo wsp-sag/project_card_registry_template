@@ -139,7 +139,7 @@ def _make_available(nodes_or_links: str, config: dict) -> list:
     for entry in subject_dict:
         temp_start = entry.get("start")
         temp_end = entry.get("end")
-        for id in range(temp_start, temp_end):
+        for id in range(temp_start, temp_end + 1):
             ids_in_use[id] = True
 
     return ids_in_use
