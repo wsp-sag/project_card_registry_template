@@ -26,15 +26,6 @@ def add_cards_to_registry(
     links_in_use = _make_available("links", config)
     out_df = input_df
 
-    # the _update_registry needs to be called for each change, so the architecture
-    # i have now fails, as it expects one change per card, not several.
-    # we could do update_registry for each change, but this expects the project card to be
-    # written out once it runs, which isn't right. Actually, it may be, if I update the dictionary
-    # correctly.
-    # So, first i need to change the logic here to iterate on each change and call update_registry.
-    # see if that works with some new tests.
-    # do not use if card_dict["projects"] first check if card_dict.get("projects") is not None
-
     for card, filename in card_file_list:
         card_dict = card.__dict__
         if "project" in card_dict:
