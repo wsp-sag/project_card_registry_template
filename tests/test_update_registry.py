@@ -18,7 +18,6 @@ To run with print statments, use `pytest -s -m update_registry`
 
 
 @pytest.mark.ci
-@pytest.mark.donkey
 @pytest.mark.update_registry
 def test_update_registry(request):
 
@@ -60,7 +59,11 @@ def test_update_registry(request):
     target_ii_df = target_ii_df.sort_values(by=["type", "id"]).reset_index(drop=True)
 
     outcome_df = pd.read_csv(output_file)
-    outcome_df = outcome_df[["type", "id", "project_added"]].sort_values(by=["type", "id"]).reset_index(drop=True)
+    outcome_df = (
+        outcome_df[["type", "id", "project_added"]]
+        .sort_values(by=["type", "id"])
+        .reset_index(drop=True)
+    )
 
     os.remove(input_file)
     os.remove(output_file)
@@ -122,7 +125,11 @@ def test_update_registry_existing(request):
     target_ii_df = target_ii_df.sort_values(by=["type", "id"]).reset_index(drop=True)
 
     outcome_df = pd.read_csv(output_file)
-    outcome_df = outcome_df[["type", "id", "project_added"]].sort_values(by=["type", "id"]).reset_index(drop=True)
+    outcome_df = (
+        outcome_df[["type", "id", "project_added"]]
+        .sort_values(by=["type", "id"])
+        .reset_index(drop=True)
+    )
 
     os.remove(input_file)
     os.remove(output_file)
@@ -182,7 +189,11 @@ def test_update_registry_no_new_projects(request):
     target_ii_df = target_ii_df.sort_values(by=["type", "id"]).reset_index(drop=True)
 
     outcome_df = pd.read_csv(output_file)
-    outcome_df = outcome_df[["type", "id", "project_added"]].sort_values(by=["type", "id"]).reset_index(drop=True)
+    outcome_df = (
+        outcome_df[["type", "id", "project_added"]]
+        .sort_values(by=["type", "id"])
+        .reset_index(drop=True)
+    )
 
     os.remove(input_file)
     os.remove(output_file)
@@ -220,9 +231,70 @@ def test_update_registry_no_new_nodes(request):
     target_df = target_df.sort_values(by=["type", "id"]).reset_index(drop=True)
 
     outcome_df = pd.read_csv(output_file)
-    outcome_df = outcome_df[["type", "id", "project_added"]].sort_values(by=["type", "id"]).reset_index(drop=True)
+    outcome_df = (
+        outcome_df[["type", "id", "project_added"]]
+        .sort_values(by=["type", "id"])
+        .reset_index(drop=True)
+    )
 
     os.remove(input_file)
     os.remove(output_file)
 
     assert target_df.equals(outcome_df) is True
+
+
+@pytest.mark.ci
+@pytest.mark.update_registry
+def test_update_registry_category(request):
+
+    input_file = "test_input_registry.csv"
+    output_file = "test_update_registry.csv"
+
+    data = []
+    input_df = pd.DataFrame(data, columns=["type", "id", "project_added"])
+    input_df.to_csv(input_file, index=False)
+
+    update_registry(
+        config_file="registry_config.yml",
+        input_reg_file=input_file,
+        output_reg_file=output_file,
+        card_dir=os.path.join(".", "tests", "projects", "categories"),
+        write_card_updates=False,
+    )
+
+    data = [
+        ["node", 1001, "Project E"],
+        ["node", 1002, "Project E"],
+        ["node", 1003, "Project D"],
+        ["node", 1004, "Project D"],
+        ["link", 501, "Project E"],
+        ["link", 502, "Project D"],
+    ]
+    target_i_df = pd.DataFrame(data, columns=["type", "id", "project_added"])
+    target_i_df = target_i_df.sort_values(by=["type", "id"]).reset_index(drop=True)
+
+    data = [
+        ["node", 1001, "Project D"],
+        ["node", 1002, "Project D"],
+        ["node", 1003, "Project E"],
+        ["node", 1004, "Project E"],
+        ["link", 501, "Project D"],
+        ["link", 502, "Project E"],
+    ]
+    target_ii_df = pd.DataFrame(data, columns=["type", "id", "project_added"])
+    target_ii_df = target_ii_df.sort_values(by=["type", "id"]).reset_index(drop=True)
+
+    outcome_df = pd.read_csv(output_file)
+    outcome_df = (
+        outcome_df[["type", "id", "project_added"]]
+        .sort_values(by=["type", "id"])
+        .reset_index(drop=True)
+    )
+
+    os.remove(input_file)
+    os.remove(output_file)
+
+    assert (
+        target_i_df.equals(outcome_df) is True
+        or target_ii_df.equals(outcome_df) is True
+    )
