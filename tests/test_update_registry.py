@@ -4,6 +4,8 @@ import inspect
 import pytest
 import pandas as pd
 
+from network_wrangler import ProjectCard
+
 c_dir = os.path.dirname(os.path.abspath(inspect.getfile(inspect.currentframe())))
 p_dir = os.path.dirname(c_dir)
 sys.path.insert(0, p_dir)
@@ -205,6 +207,27 @@ def test_update_registry_no_new_projects(request):
 
 
 @pytest.mark.ci
+def test_read_write_project_card(request):
+
+    card_dir = os.path.join(".", "tests", "projects", "project_AB")
+    card_file = os.path.join(card_dir, "project_A.yml")
+    output_file = "test_card.yml"
+
+    card = ProjectCard.read(card_file, validate=False)
+    card.__dict__.pop("file")
+    card.__dict__.pop("valid")
+    card.write(filename=output_file)
+
+    card_from_disk = ProjectCard.read(output_file, validate=False)
+    card_from_disk.__dict__.pop("file")
+    card_from_disk.__dict__.pop("valid")
+
+    os.remove(output_file)
+
+    assert (card.__dict__ == card_from_disk.__dict__) is True
+
+
+@pytest.mark.ci
 @pytest.mark.update_registry
 def test_update_registry_no_new_nodes(request):
 
@@ -241,60 +264,3 @@ def test_update_registry_no_new_nodes(request):
     os.remove(output_file)
 
     assert target_df.equals(outcome_df) is True
-
-
-@pytest.mark.ci
-@pytest.mark.update_registry
-def test_update_registry_category(request):
-
-    input_file = "test_input_registry.csv"
-    output_file = "test_update_registry.csv"
-
-    data = []
-    input_df = pd.DataFrame(data, columns=["type", "id", "project_added"])
-    input_df.to_csv(input_file, index=False)
-
-    update_registry(
-        config_file="registry_config.yml",
-        input_reg_file=input_file,
-        output_reg_file=output_file,
-        card_dir=os.path.join(".", "tests", "projects", "categories"),
-        write_card_updates=False,
-    )
-
-    data = [
-        ["node", 1001, "Project E"],
-        ["node", 1002, "Project E"],
-        ["node", 1003, "Project D"],
-        ["node", 1004, "Project D"],
-        ["link", 501, "Project E"],
-        ["link", 502, "Project D"],
-    ]
-    target_i_df = pd.DataFrame(data, columns=["type", "id", "project_added"])
-    target_i_df = target_i_df.sort_values(by=["type", "id"]).reset_index(drop=True)
-
-    data = [
-        ["node", 1001, "Project D"],
-        ["node", 1002, "Project D"],
-        ["node", 1003, "Project E"],
-        ["node", 1004, "Project E"],
-        ["link", 501, "Project D"],
-        ["link", 502, "Project E"],
-    ]
-    target_ii_df = pd.DataFrame(data, columns=["type", "id", "project_added"])
-    target_ii_df = target_ii_df.sort_values(by=["type", "id"]).reset_index(drop=True)
-
-    outcome_df = pd.read_csv(output_file)
-    outcome_df = (
-        outcome_df[["type", "id", "project_added"]]
-        .sort_values(by=["type", "id"])
-        .reset_index(drop=True)
-    )
-
-    os.remove(input_file)
-    os.remove(output_file)
-
-    assert (
-        target_i_df.equals(outcome_df) is True
-        or target_ii_df.equals(outcome_df) is True
-    )

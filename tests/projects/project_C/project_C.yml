@@ -6,8 +6,9 @@ dependencies:
   prerequisites: []
   corequisites: []
   conflicts: []
-category: Add New Roadway
-links:
+changes:
+- category: Add New Roadway
+  links:
   - A: 801
     B: 802
     model_link_id: 501
