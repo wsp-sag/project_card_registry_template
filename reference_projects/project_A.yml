@@ -1,7 +1,7 @@
 project: Project A
 tags:
 - registry_example
-dependencies: ''
+dependencies: {}
 changes:
 - roadway_addition:
     links:
