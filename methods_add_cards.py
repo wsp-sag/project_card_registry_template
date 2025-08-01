@@ -2,7 +2,11 @@ from os import write
 from numpy import True_
 import pandas as pd
 from typing import Tuple
-from network_wrangler import ProjectCard
+
+from pathlib import Path
+
+from projectcard import ProjectCard
+from projectcard import write_card
 
 
 def add_cards_to_registry(
@@ -30,8 +34,8 @@ def add_cards_to_registry(
     for card, filename in card_file_list:
         if card.project not in input_df["project_added"].values:
             for change_index, change_dict in enumerate(card.changes):
-                if change_dict.get("category", "Missing") == "Add New Roadway":
-                    if "nodes" in change_dict:
+                if "roadway_addition" in change_dict:
+                    if "nodes" in change_dict["roadway_addition"]:
                         node_df, node_update, card = _update_registry(
                             "nodes",
                             out_df,
@@ -52,10 +56,10 @@ def add_cards_to_registry(
                     )
 
                     if node_df is not None:
-                        out_df = out_df.append(node_df, ignore_index=True)
+                        out_df = pd.concat([out_df, node_df], ignore_index=True)
 
                     out_df = (
-                        out_df.append(link_df, ignore_index=True)
+                        pd.concat([out_df, link_df], ignore_index=True)
                         .drop_duplicates()
                         .reset_index(drop=True)
                     )
@@ -66,7 +70,7 @@ def add_cards_to_registry(
                                 card.__dict__.pop("file")
                             if "valid" in card.__dict__:
                                 card.__dict__.pop("valid")
-                            card.write(filename=filename)
+                            write_card(card, filename=Path(filename))
 
     return out_df
 
@@ -238,7 +242,7 @@ def _update_registry(
 
     subject_df = input_df[input_df["type"] == subject_word]
 
-    for subject_index, subject in enumerate(card.changes[change_index][nodes_or_links]):
+    for subject_index, subject in enumerate(card.changes[change_index]["roadway_addition"][nodes_or_links]):
         new_id = subject[subject_id_word]
 
         _is_id_in_allowable_range(subject_word, card.project, new_id, range_in_use)
@@ -251,7 +255,7 @@ def _update_registry(
                     "project_added": [card.project],
                 }
             )
-            subject_df = subject_df.append(updates_df)
+            subject_df = pd.concat([subject_df, updates_df])
         else:
             number = _find_available_id(
                 subject_word,
@@ -260,15 +264,15 @@ def _update_registry(
                 range_in_use,
                 subject_df,
             )
-            card.changes[change_index][nodes_or_links][subject_index][
+            card.changes[change_index]["roadway_addition"][nodes_or_links][subject_index][
                 subject_id_word
             ] = number
             if nodes_or_links == "nodes":
-                for i in range(0, len(card.changes[change_index]["links"])):
-                    if card.changes[change_index]["links"][i]["A"] == new_id:
-                        card.changes[change_index]["links"][i]["A"] = number
-                    if card.changes[change_index]["links"][i]["B"] == new_id:
-                        card.changes[change_index]["links"][i]["B"] = number
+                for i in range(0, len(card.changes[change_index]["roadway_addition"]["links"])):
+                    if card.changes[change_index]["roadway_addition"]["links"][i]["A"] == new_id:
+                        card.changes[change_index]["roadway_addition"]["links"][i]["A"] = number
+                    if card.changes[change_index]["roadway_addition"]["links"][i]["B"] == new_id:
+                        card.changes[change_index]["roadway_addition"]["links"][i]["B"] = number
             updates_df = pd.DataFrame(
                 {
                     "type": subject_word,
@@ -276,7 +280,7 @@ def _update_registry(
                     "project_added": [card.project],
                 }
             )
-            subject_df = subject_df.append(updates_df)
+            subject_df = pd.concat([subject_df, updates_df])
             write_updated_card = True
 
     return subject_df, write_updated_card, card

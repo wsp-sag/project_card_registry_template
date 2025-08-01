@@ -1,6 +1,5 @@
 import os
 import yaml
-import pytest
 import pandas as pd
 
 from methods_io import read_project_cards

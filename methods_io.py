@@ -1,5 +1,5 @@
 import os
-from network_wrangler import ProjectCard
+from projectcard import read_card
 
 CARD_DIR = os.path.join(".", "projects")
 
@@ -22,7 +22,7 @@ def read_project_cards(card_dir: str = CARD_DIR) -> list:
             name, extension = os.path.splitext(filename)
             if extension in [".yml", ".yaml"]:
                 card_file = os.path.join(dirpath, filename)
-                card = ProjectCard.read(card_file, validate=False)
+                card = read_card(card_file, validate=True)
                 card_file_list.append((card, card_file))
 
     return card_file_list
